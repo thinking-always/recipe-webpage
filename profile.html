@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User's Recipes</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1 { color: #444; }
+    .recipe-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1 id="profile-title">User's Blog</h1>
+  <div id="recipe-list"></div>
+
+  <script>
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, tag => (
+        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
+      ));
+    }
+
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("profileUser");
+
+    if (!token || !username) {
+      alert("Access denied");
+      window.location.href = "/login.html";
+    }
+
+    document.getElementById("profile-title").innerText = `${username}님의 Blog`;
+
+    fetch("/recipes", {
+      headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("recipe-list");
+      const filtered = data.data.filter(r => r.username === username);
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<p>No recipes yet.</p>";
+        return;
+      }
+
+      filtered.forEach(recipe => {
+        const div = document.createElement("div");
+        div.className = "recipe-card";
+        div.innerHTML = `<h3>${escapeHTML(recipe.title)}</h3><p>${escapeHTML(recipe.description)}</p>`;
+        list.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>

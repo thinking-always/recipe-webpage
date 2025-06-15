@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Recipes</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .recipe-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      max-width: 90%;
+    }
+    .modal-close {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>All Recipes</h1>
+  <div id="recipe-list"></div>
+
+  <div class="modal" id="detail-modal">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-description"></p>
+      <p>Written by: <span id="modal-writer" style="color:blue; cursor:pointer;"></span></p>
+    </div>
+  </div>
+
+  <script>
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, tag => (
+        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
+      ));
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in");
+      window.location.href = "/login.html";
+    }
+
+    fetch("/recipes", {
+      headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("recipe-list");
+      data.data.forEach(recipe => {
+        const div = document.createElement("div");
+        div.className = "recipe-card";
+        div.innerHTML = `<h3>${escapeHTML(recipe.title)}</h3><p>${escapeHTML(recipe.description.slice(0, 50))}...</p>`;
+        div.onclick = () => showDetails(recipe);
+        list.appendChild(div);
+      });
+    });
+
+    function showDetails(recipe) {
+      document.getElementById("modal-title").innerText = recipe.title;
+      document.getElementById("modal-description").innerText = recipe.description;
+      const writer = document.getElementById("modal-writer");
+      writer.innerText = recipe.username;
+      writer.onclick = () => {
+        localStorage.setItem("profileUser", recipe.username);
+        window.location.href = "/profile.html";
+      };
+      document.getElementById("detail-modal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("detail-modal").style.display = "none";
+    }
+
+    document.getElementById("detail-modal").addEventListener("click", closeModal);
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘 뭐 먹지? - 홈</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fffaf3;
+      padding-top: 60px;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      left: 20px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .logout-btn {
+      position: absolute;
+      right: 20px;
+      padding: 8px 16px;
+      background-color: #ccc;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -220px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 999;
+      padding-top: 60px;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #333;
+      text-decoration: none;
+      border-bottom: 1px solid #eee;
+    }
+
+    .side-menu a:hover {
+      background-color: #f5f5f5;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      display: none;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .search-box {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .search-box input {
+      padding: 10px;
+      font-size: 16px;
+      width: 280px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #333;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .like {
+      color: #e53935;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="header-title">오늘 뭐 먹지?</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+
+  <!-- Side Menu -->
+  <div id="sideMenu" class="side-menu">
+    <a href="index.html">🏠 홈페이지</a>
+    <a href="main.html">📋 레시피</a>
+    <a href="fridge.html">🧊 냉장고</a>
+    <a href="calendar.html">📅 캘린더</a>
+    <a href="feedback.html">💬 피드백</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <!-- Main -->
+  <div class="container">
+    <!-- Search -->
+    <div class="search-box">
+      <input type="text" id="search" placeholder="음식 이름 검색..." oninput="filterRecipes()" />
+    </div>
+
+    <!-- Top Recipes -->
+    <h2>🔥 인기 레시피</h2>
+    <div id="top-recipes" class="grid"></div>
+
+    <!-- New Recipes -->
+    <h2>🆕 최신 레시피</h2>
+    <div id="new-recipes" class="grid"></div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다");
+      window.location.href = "login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("overlay");
+      menu.classList.toggle("open");
+      overlay.classList.toggle("show");
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, tag => (
+        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
+      ));
+    }
+
+    let allRecipes = [];
+
+    function filterRecipes() {
+      const keyword = document.getElementById("search").value.toLowerCase();
+      const filtered = allRecipes.filter(r => r.title.toLowerCase().includes(keyword));
+      renderSections(filtered);
+    }
+
+    function renderSections(recipes) {
+      const top = document.getElementById("top-recipes");
+      const latest = document.getElementById("new-recipes");
+
+      top.innerHTML = "";
+      latest.innerHTML = "";
+
+      // 좋아요 기준 내림차순 정렬
+      const topSorted = [...recipes].sort((a, b) => b.likes - a.likes).slice(0, 6);
+      topSorted.forEach(r => {
+        top.innerHTML += `
+          <div class="card">
+            <h3>${escapeHTML(r.title)}</h3>
+            <p>${escapeHTML(r.description.slice(0, 60))}...</p>
+            <p class="like">❤️ ${r.likes} 좋아요</p>
+          </div>`;
+      });
+
+      // 최신 레시피 (업로드 순)
+      const latestSorted = [...recipes].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 12);
+      latestSorted.forEach(r => {
+        latest.innerHTML += `
+          <div class="card">
+            <h3>${escapeHTML(r.title)}</h3>
+            <p>${escapeHTML(r.description.slice(0, 60))}...</p>
+          </div>`;
+      });
+    }
+
+    fetch("/recipes", {
+      headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      allRecipes = data.data.map(r => ({
+        ...r,
+        likes: r.likes || 0,
+        created_at: r.created_at || new Date()
+      }));
+      renderSections(allRecipes);
+    });
+  </script>
+</body>
+</html>
