@@ -1,98 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>All Recipes</title>
+  <meta charset="UTF-8" />
+  <title>📋 모든 레시피</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial; margin: 20px; }
-    .recipe-card {
-      border: 1px solid #ccc;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fefefe;
+      padding-top: 60px;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: #ffa726;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .search-box {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .search-box input {
       padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      font-size: 16px;
+      width: 240px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .search-box button {
+      padding: 10px 16px;
+      font-size: 16px;
+      margin-left: 5px;
+      background: #ff7043;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .modal {
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .card button {
+      margin-top: 8px;
+      margin-right: 5px;
+      font-size: 13px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    #modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
     }
-    .modal-content {
+
+    #modal-content {
       background: white;
       padding: 20px;
+      max-width: 500px;
+      margin: 80px auto;
       border-radius: 10px;
-      width: 400px;
-      max-width: 90%;
+      position: relative;
     }
-    .modal-close {
-      float: right;
+
+    #modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
       cursor: pointer;
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>All Recipes</h1>
-  <div id="recipe-list"></div>
 
-  <div class="modal" id="detail-modal">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <span class="modal-close" onclick="closeModal()">&times;</span>
-      <h2 id="modal-title"></h2>
+  <header>
+    <div class="header-title">📋 전체 레시피 보기</div>
+  </header>
+
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="레시피 제목 검색..." />
+      <button onclick="searchRecipes()">검색</button>
+    </div>
+
+    <div id="recipe-list" class="grid"></div>
+  </div>
+
+  <!-- 모달 -->
+  <div id="modal" onclick="closeModal()">
+    <div id="modal-content" onclick="event.stopPropagation()">
+      <span id="modal-close" onclick="closeModal()">&times;</span>
+      <h3 id="modal-title"></h3>
       <p id="modal-description"></p>
-      <p>Written by: <span id="modal-writer" style="color:blue; cursor:pointer;"></span></p>
     </div>
   </div>
 
   <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "login.html";
+    }
+
+    let allRecipes = [];
+
     function escapeHTML(str) {
       return str.replace(/[&<>"']/g, tag => (
         {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
       ));
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please log in");
-      window.location.href = "/login.html";
+    function loadRecipes() {
+      fetch("/recipes", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+        .then(res => res.json())
+        .then(data => {
+          allRecipes = data.data;
+          renderRecipes(allRecipes);
+        });
     }
 
-    fetch("/recipes", {
-      headers: { "Authorization": "Bearer " + token }
-    })
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById("recipe-list");
-      data.data.forEach(recipe => {
-        const div = document.createElement("div");
-        div.className = "recipe-card";
-        div.innerHTML = `<h3>${escapeHTML(recipe.title)}</h3><p>${escapeHTML(recipe.description.slice(0, 50))}...</p>`;
-        div.onclick = () => showDetails(recipe);
-        list.appendChild(div);
+    function renderRecipes(list) {
+      const container = document.getElementById("recipe-list");
+      container.innerHTML = "";
+
+      if (list.length === 0) {
+        container.innerHTML = "<p>레시피가 없습니다.</p>";
+        return;
+      }
+
+      list.forEach(recipe => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${escapeHTML(recipe.title)}</h3>
+          <p>${escapeHTML(recipe.description.substring(0, 60))}...</p>
+          <button onclick="event.stopPropagation(); editRecipe(${recipe.id})">수정</button>
+          <button onclick="event.stopPropagation(); deleteRecipe(${recipe.id})">삭제</button>
+        `;
+        card.addEventListener("click", () => showDetails(recipe));
+        container.appendChild(card);
       });
-    });
+    }
+
+    function searchRecipes() {
+      const keyword = document.getElementById("search-input").value.toLowerCase();
+      const filtered = allRecipes.filter(r => r.title.toLowerCase().includes(keyword));
+      renderRecipes(filtered);
+    }
+
+    function editRecipe(id) {
+      const title = prompt("새 제목을 입력하세요:");
+      const description = prompt("새 설명을 입력하세요:");
+
+      if (!title || !description) return;
+
+      fetch(`/recipes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ title, description })
+      })
+      .then(res => res.json())
+      .then(() => loadRecipes());
+    }
+
+    function deleteRecipe(id) {
+      if (!confirm("정말 삭제할까요?")) return;
+
+      fetch(`/recipes/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      })
+      .then(res => res.json())
+      .then(() => loadRecipes());
+    }
 
     function showDetails(recipe) {
       document.getElementById("modal-title").innerText = recipe.title;
       document.getElementById("modal-description").innerText = recipe.description;
-      const writer = document.getElementById("modal-writer");
-      writer.innerText = recipe.username;
-      writer.onclick = () => {
-        localStorage.setItem("profileUser", recipe.username);
-        window.location.href = "/profile.html";
-      };
-      document.getElementById("detail-modal").style.display = "flex";
+      document.getElementById("modal").style.display = "block";
     }
 
     function closeModal() {
-      document.getElementById("detail-modal").style.display = "none";
+      document.getElementById("modal").style.display = "none";
     }
 
-    document.getElementById("detail-modal").addEventListener("click", closeModal);
+    loadRecipes();
   </script>
 </body>
 </html>
