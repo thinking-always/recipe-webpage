@@ -5,6 +5,7 @@ from database import db
 
 recipe_bp = Blueprint("recipes", __name__)
 
+# 모든 레시피 조회
 @recipe_bp.route("/recipes", methods=["GET"])
 @jwt_required()
 def get_all_recipes():
@@ -18,6 +19,7 @@ def get_all_recipes():
     } for r in recipes]
     return jsonify({"success": True, "data": data})
 
+# 레시피 등록 (중복 제거됨)
 @recipe_bp.route("/recipes", methods=["POST"])
 @jwt_required()
 def add_recipe():
@@ -35,6 +37,7 @@ def add_recipe():
 
     return jsonify({"success": True, "message": "Recipe added!"}), 201
 
+# 레시피 수정
 @recipe_bp.route("/recipes/<int:id>", methods=["PUT"])
 @jwt_required()
 def edit_recipe(id):
@@ -51,6 +54,7 @@ def edit_recipe(id):
 
     return jsonify({"success": True, "message": "Recipe updated"})
 
+# 레시피 삭제
 @recipe_bp.route("/recipes/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_recipe(id):

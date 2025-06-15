@@ -1,247 +1,171 @@
+<!-- main.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>📋 모든 레시피</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프로머를 복기</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #fefefe;
-      padding-top: 60px;
+      background-color: #fff8f0;
     }
-
     header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 60px;
-      background: #ffa726;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .header-title {
-      font-size: 22px;
+      padding: 16px;
+      background: #ff7043;
+      color: white;
+      font-size: 24px;
       font-weight: bold;
+      text-align: center;
+      position: relative;
+    }
+    .hamburger {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      cursor: pointer;
+      font-size: 24px;
+      background: none;
+      border: none;
       color: white;
     }
-
-    .container {
+    .menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 100%;
+      background: #ffffff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
       padding: 20px;
-      max-width: 1000px;
-      margin: auto;
+      z-index: 1000;
     }
-
-    .search-box {
-      text-align: center;
-      margin-bottom: 30px;
+    .menu a {
+      display: block;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: #333;
     }
-
-    .search-box input {
+    .container {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 200px;
+    }
+    .category-filter {
+      background: white;
+      border-radius: 10px;
       padding: 10px;
-      font-size: 16px;
-      width: 240px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      outline: none;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-
-    .search-box button {
-      padding: 10px 16px;
+    .category-filter h3 {
+      margin-top: 0;
+    }
+    .category-filter label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    .main-content {
+      flex: 1;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 8px;
       font-size: 16px;
-      margin-left: 5px;
+    }
+    .search-bar button {
+      padding: 8px 12px;
       background: #ff7043;
       color: white;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
     }
-
+    .register-box input, .register-box textarea {
+      display: block;
+      width: 300px;
+      margin-bottom: 8px;
+      padding: 6px;
+    }
+    .register-box button {
+      background: #66bb6a;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 20px;
     }
-
     .card {
       background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
       padding: 15px;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
-      position: relative;
-      cursor: pointer;
-    }
-
-    .card h3 {
-      margin-top: 0;
-      font-size: 18px;
-    }
-
-    .card p {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .card button {
-      margin-top: 8px;
-      margin-right: 5px;
-      font-size: 13px;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-
-    #modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 1000;
-    }
-
-    #modal-content {
-      background: white;
-      padding: 20px;
-      max-width: 500px;
-      margin: 80px auto;
       border-radius: 10px;
-      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    #modal-close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 20px;
-      cursor: pointer;
+    .card h4 {
+      margin: 0 0 10px 0;
     }
   </style>
 </head>
 <body>
-
   <header>
-    <div class="header-title">📋 전체 레시피 보기</div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+    🍜 레시피 목록
   </header>
 
+  <div class="menu" id="side-menu">
+    <a href="index.html">홈</a>
+    <a href="main.html">레시피</a>
+    <a href="fridge.html">냉장고</a>
+    <a href="calendar.html">카드</a>
+    <a href="feedback.html">피드백</a>
+  </div>
+
   <div class="container">
-    <div class="search-box">
-      <input type="text" id="search-input" placeholder="레시피 제목 검색..." />
-      <button onclick="searchRecipes()">검색</button>
+    <div class="sidebar">
+      <div class="category-filter">
+        <h3>카테고리</h3>
+        <label><input type="checkbox" value="한식" /> 한식</label>
+        <label><input type="checkbox" value="중식" /> 중식</label>
+        <label><input type="checkbox" value="양식" /> 양식</label>
+        <label><input type="checkbox" value="국내시설" /> 국내시설</label>
+      </div>
     </div>
-
-    <div id="recipe-list" class="grid"></div>
-  </div>
-
-  <!-- 모달 -->
-  <div id="modal" onclick="closeModal()">
-    <div id="modal-content" onclick="event.stopPropagation()">
-      <span id="modal-close" onclick="closeModal()">&times;</span>
-      <h3 id="modal-title"></h3>
-      <p id="modal-description"></p>
+    <div class="main-content">
+      <div class="top-bar">
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="레시피 검색..." />
+          <button onclick="searchRecipes()">검색</button>
+        </div>
+        <div class="register-box">
+          <input type="text" id="new-title" placeholder="레시피 제목" />
+          <textarea id="new-desc" placeholder="내용"></textarea>
+          <button onclick="createRecipe()">등록</button>
+        </div>
+      </div>
+      <div class="grid" id="recipe-list"></div>
     </div>
   </div>
-
   <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "login.html";
+    function toggleMenu() {
+      const menu = document.getElementById("side-menu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
-
-    let allRecipes = [];
-
-    function escapeHTML(str) {
-      return str.replace(/[&<>"']/g, tag => (
-        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
-      ));
-    }
-
-    function loadRecipes() {
-      fetch("/recipes", {
-        headers: { "Authorization": "Bearer " + token }
-      })
-        .then(res => res.json())
-        .then(data => {
-          allRecipes = data.data;
-          renderRecipes(allRecipes);
-        });
-    }
-
-    function renderRecipes(list) {
-      const container = document.getElementById("recipe-list");
-      container.innerHTML = "";
-
-      if (list.length === 0) {
-        container.innerHTML = "<p>레시피가 없습니다.</p>";
-        return;
-      }
-
-      list.forEach(recipe => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h3>${escapeHTML(recipe.title)}</h3>
-          <p>${escapeHTML(recipe.description.substring(0, 60))}...</p>
-          <button onclick="event.stopPropagation(); editRecipe(${recipe.id})">수정</button>
-          <button onclick="event.stopPropagation(); deleteRecipe(${recipe.id})">삭제</button>
-        `;
-        card.addEventListener("click", () => showDetails(recipe));
-        container.appendChild(card);
-      });
-    }
-
-    function searchRecipes() {
-      const keyword = document.getElementById("search-input").value.toLowerCase();
-      const filtered = allRecipes.filter(r => r.title.toLowerCase().includes(keyword));
-      renderRecipes(filtered);
-    }
-
-    function editRecipe(id) {
-      const title = prompt("새 제목을 입력하세요:");
-      const description = prompt("새 설명을 입력하세요:");
-
-      if (!title || !description) return;
-
-      fetch(`/recipes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ title, description })
-      })
-      .then(res => res.json())
-      .then(() => loadRecipes());
-    }
-
-    function deleteRecipe(id) {
-      if (!confirm("정말 삭제할까요?")) return;
-
-      fetch(`/recipes/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": "Bearer " + token
-        }
-      })
-      .then(res => res.json())
-      .then(() => loadRecipes());
-    }
-
-    function showDetails(recipe) {
-      document.getElementById("modal-title").innerText = recipe.title;
-      document.getElementById("modal-description").innerText = recipe.description;
-      document.getElementById("modal").style.display = "block";
-    }
-
-    function closeModal() {
-      document.getElementById("modal").style.display = "none";
-    }
-
-    loadRecipes();
   </script>
+  <script src="main.js"></script>
 </body>
 </html>
