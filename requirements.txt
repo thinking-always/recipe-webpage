@@ -1,0 +1,6 @@
+. venv/bin/activate
+
+
+#id 
+username=min pass=5678
+username= testuser2 pass=testpass2
