@@ -1,171 +1,262 @@
-<!-- main.html -->
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>오늘 뭐 먹지? - 레시피</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>프로머를 복기</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #fff8f0;
+      background: #fffaf3;
+      padding-top: 60px;
     }
+
     header {
-      padding: 16px;
-      background: #ff7043;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-      text-align: center;
-      position: relative;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
     }
-    .hamburger {
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .menu-toggle {
       position: absolute;
-      top: 16px;
-      left: 16px;
-      cursor: pointer;
+      left: 20px;
       font-size: 24px;
       background: none;
       border: none;
-      color: white;
+      cursor: pointer;
     }
-    .menu {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 200px;
-      height: 100%;
-      background: #ffffff;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-      padding: 20px;
-      z-index: 1000;
-    }
-    .menu a {
-      display: block;
-      margin-bottom: 10px;
-      text-decoration: none;
-      color: #333;
-    }
-    .container {
+
+    .header-actions {
+      position: absolute;
+      right: 20px;
       display: flex;
+      align-items: center;
+    }
+
+    .header-actions button {
+      margin-left: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .profile-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #ccc;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+      background-size: cover;
+    }
+
+    .logout-btn {
+      padding: 6px 10px;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .container {
       padding: 20px;
-      gap: 20px;
+      max-width: 1200px;
+      margin: auto;
     }
-    .sidebar {
-      width: 200px;
-    }
-    .category-filter {
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    .category-filter h3 {
-      margin-top: 0;
-    }
-    .category-filter label {
-      display: block;
-      margin-bottom: 8px;
-    }
-    .main-content {
-      flex: 1;
-    }
-    .top-bar {
+
+    .search-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       margin-bottom: 20px;
     }
-    .search-bar input {
-      padding: 8px;
+
+    .search-row input {
+      flex-grow: 1;
+      padding: 10px;
       font-size: 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+      outline: none;
     }
-    .search-bar button {
-      padding: 8px 12px;
-      background: #ff7043;
+
+    .search-row button {
+      padding: 10px 16px;
+      background-color: #4caf50;
       color: white;
       border: none;
-      cursor: pointer;
+      border-radius: 20px;
+      font-size: 14px;
     }
-    .register-box input, .register-box textarea {
-      display: block;
-      width: 300px;
-      margin-bottom: 8px;
-      padding: 6px;
-    }
-    .register-box button {
-      background: #66bb6a;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 20px;
     }
+
     .card {
       background: white;
-      padding: 15px;
+      border: 1px solid #ddd;
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
     }
-    .card h4 {
-      margin: 0 0 10px 0;
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -220px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 999;
+      padding-top: 60px;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #333;
+      text-decoration: none;
+      border-bottom: 1px solid #eee;
+    }
+
+    .side-menu a:hover {
+      background-color: #f5f5f5;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      display: none;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .register-btn {
+      display: block;
+      margin-bottom: 30px;
+      background-color: #1976d2;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      float: right;
     }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
-    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
-    🍜 레시피 목록
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="header-title">레시피</div>
+    <div class="header-actions">
+      <button class="profile-btn" onclick="window.location.href='profile.html'"></button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
   </header>
 
-  <div class="menu" id="side-menu">
-    <a href="index.html">홈</a>
-    <a href="main.html">레시피</a>
-    <a href="fridge.html">냉장고</a>
-    <a href="calendar.html">카드</a>
-    <a href="feedback.html">피드백</a>
+  <!-- Side Menu -->
+  <div id="sideMenu" class="side-menu">
+    <a href="index.html">🏠 홈페이지</a>
+    <a href="main.html">📋 레시피</a>
+    <a href="fridge.html">🧊 냉장고</a>
+    <a href="calendar.html">📅 캘린더</a>
+    <a href="feedback.html">💬 피드백</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <!-- Main -->
+  <div class="container">
+    <button class="register-btn" onclick="window.location.href='profile.html'">+ 레시피 등록</button>
+
+    <div class="search-row">
+      <input type="text" id="search" placeholder="레시피 검색..." oninput="filterRecipes()" />
+      <button onclick="filterRecipes()">검색</button>
+    </div>
+
+    <div id="recipe-list" class="grid"></div>
   </div>
 
-  <div class="container">
-    <div class="sidebar">
-      <div class="category-filter">
-        <h3>카테고리</h3>
-        <label><input type="checkbox" value="한식" /> 한식</label>
-        <label><input type="checkbox" value="중식" /> 중식</label>
-        <label><input type="checkbox" value="양식" /> 양식</label>
-        <label><input type="checkbox" value="국내시설" /> 국내시설</label>
-      </div>
-    </div>
-    <div class="main-content">
-      <div class="top-bar">
-        <div class="search-bar">
-          <input type="text" id="search-input" placeholder="레시피 검색..." />
-          <button onclick="searchRecipes()">검색</button>
-        </div>
-        <div class="register-box">
-          <input type="text" id="new-title" placeholder="레시피 제목" />
-          <textarea id="new-desc" placeholder="내용"></textarea>
-          <button onclick="createRecipe()">등록</button>
-        </div>
-      </div>
-      <div class="grid" id="recipe-list"></div>
-    </div>
-  </div>
+  <!-- Script -->
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById("side-menu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다");
+      window.location.href = "login.html";
     }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("overlay");
+      menu.classList.toggle("open");
+      overlay.classList.toggle("show");
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, tag => (
+        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
+      ));
+    }
+
+    let allRecipes = [];
+
+    function filterRecipes() {
+      const keyword = document.getElementById("search").value.toLowerCase();
+      const filtered = allRecipes.filter(r => r.title.toLowerCase().includes(keyword));
+      renderRecipes(filtered);
+    }
+
+    function renderRecipes(recipes) {
+      const list = document.getElementById("recipe-list");
+      list.innerHTML = "";
+      recipes.forEach(r => {
+        list.innerHTML += `
+          <div class="card">
+            <h3>${escapeHTML(r.title)}</h3>
+            <p>${escapeHTML(r.description.slice(0, 60))}...</p>
+          </div>`;
+      });
+    }
+
+    fetch("/recipes", {
+      headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      allRecipes = data.data;
+      renderRecipes(allRecipes);
+    });
   </script>
-  <script src="main.js"></script>
 </body>
 </html>

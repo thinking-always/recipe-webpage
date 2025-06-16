@@ -151,10 +151,32 @@
 
   <!-- Header -->
   <header>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-    <div class="header-title">오늘 뭐 먹지?</div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </header>
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+  <div class="header-title">오늘 뭐 먹지?</div>
+  <div style="position: absolute; right: 20px; display: flex; align-items: center;">
+    <button onclick="window.location.href='profile.html'" style="
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background-color: #ccc;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+      background-size: cover;
+      cursor: pointer;
+      margin-right: 8px;
+    "></button>
+    <button onclick="logout()" style="
+      padding: 5px 10px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    ">Logout</button>
+  </div>
+</header>
+
 
   <!-- Side Menu -->
   <div id="sideMenu" class="side-menu">

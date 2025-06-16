@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Recipe, User
 from database import db
+import os
+from werkzeug.utils import secure_filename
+import uuid
 
 recipe_bp = Blueprint("recipes", __name__)
 
@@ -19,23 +22,43 @@ def get_all_recipes():
     } for r in recipes]
     return jsonify({"success": True, "data": data})
 
-# 레시피 등록 (중복 제거됨)
+# 이미지 저장 폴더 설정
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# 레시피 등록
 @recipe_bp.route("/recipes", methods=["POST"])
 @jwt_required()
-def add_recipe():
-    user_id = get_jwt_identity()
-    data = request.get_json()
-    title = data.get("title")
-    description = data.get("description")
+def create_recipe():
+    title = request.form.get("title")
+    description = request.form.get("description")
+    steps_json = request.form.get("steps")
 
-    if not title or not description:
-        return jsonify({"success": False, "message": "Missing title or description"}), 400
+    current_user_id = get_jwt_identity()
 
-    recipe = Recipe(title=title, description=description, user_id=user_id)
-    db.session.add(recipe)
+    image_urls = []
+    for key in request.files:
+        file = request.files[key]
+        if file:
+            filename = secure_filename(file.filename)
+            ext = filename.rsplit('.', 1)[-1]
+            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+            file.save(filepath)
+            image_urls.append(f"/{UPLOAD_FOLDER}/{unique_filename}")
+
+    new_recipe = Recipe(
+        title=title,
+        description=description,
+        user_id=current_user_id
+    )
+    db.session.add(new_recipe)
     db.session.commit()
 
-    return jsonify({"success": True, "message": "Recipe added!"}), 201
+    return jsonify({
+        "message": "Recipe created",
+        "images": image_urls
+    }), 201
 
 # 레시피 수정
 @recipe_bp.route("/recipes/<int:id>", methods=["PUT"])
