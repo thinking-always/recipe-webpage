@@ -90,3 +90,16 @@ def delete_recipe(id):
     db.session.delete(recipe)
     db.session.commit()
     return jsonify({"success": True, "message": "Recipe deleted"})
+
+@recipe_bp.route("/my-recipes", methods=["GET"])
+@jwt_required()
+def get_my_recipes():
+    user_id = get_jwt_identity()
+    recipes = Recipe.query.filter_by(user_id=user_id).order_by(Recipe.created_at.desc()).all()
+    data = [{
+        "id": r.id,
+        "title": r.title,
+        "description": r.description,
+        "created_at": r.created_at.strftime("%y-%m-%d"),
+    } for r in recipes]
+    return jsonify({"success": True, "data": data})

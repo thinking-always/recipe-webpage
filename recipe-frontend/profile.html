@@ -280,7 +280,7 @@
       fetch("/recipes", {
         method: "POST",
         headers: {
-          Authorization: "Bearer" + localStorage.getItem("token")
+          Authorization: "Bearer " + localStorage.getItem("token")
         },
         body: formData
       })
@@ -298,6 +298,29 @@
       });
 
     }
+
+    function loadMyRecipes() {
+      const token = localStorage.getItem("token");
+      fetch("/my-recipes", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+        .then(res => res.json())
+        .then(data => {
+          const grid = document.getElementById("my-recipes");
+          grid.innerHTML = "";
+          data.data.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+            <h3>${r.title}</h3>
+            <p>${r.description}</p>
+            <small>${r.created_at}</small>
+            `;
+            grid.appendChild(card);
+          });
+        });
+    }
+    loadMyRecipes();
   </script>
 </body>
 </html>
