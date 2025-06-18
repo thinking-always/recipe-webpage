@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘 뭐 먹지? - 냉장고</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fffaf3;
+      padding-top: 60px;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      left: 20px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .logout-area {
+      position: absolute;
+      right: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logout-area button:first-child {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background-color: #ccc;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+      background-size: cover;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .logout-area button:last-child {
+      padding: 5px 10px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -220px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 999;
+      padding-top: 60px;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #333;
+      text-decoration: none;
+      border-bottom: 1px solid #eee;
+    }
+
+    .side-menu a:hover {
+      background-color: #f5f5f5;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      display: none;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .section {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      background-color: white;
+    }
+
+    .section h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .section button {
+      width: 180px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #21c547;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+    }
+
+    .modal-content {
+      background-color: white;
+      width: 80%;
+      height: 70%;
+      display: flex;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .modal-left {
+      width: 70%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid #ccc;
+    }
+
+    .modal-right {
+      width: 30%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-right input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .modal-right button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #21c547;
+      color: white;
+      cursor: pointer;
+    }
+
+    .small-btn {
+      font-size: 12px;
+      padding: 2px 6px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="header-title">오늘 뭐 먹지?</div>
+    <div class="logout-area">
+      <button onclick="goToProfile()"></button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div id="sideMenu" class="side-menu">
+    <a href="index.html">🏠 홈페이지</a>
+    <a href="main.html">📋 레시피</a>
+    <a href="fridge.html">🧊 냉장고</a>
+    <a href="calendar.html">📅 캘린더</a>
+    <a href="feedback.html">💬 피드백</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <div class="container">
+    <div class="section">
+      <h2>Fridge</h2>
+      <button onclick="openModal('fridge')">재료 보기 및 추가하기</button>
+    </div>
+
+    <div class="section">
+      <h2>Pantry</h2>
+      <button onclick="openModal('pantry')">재료 보기 및 추가하기</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-left">
+        <h3>추가된 재료 목록</h3>
+        <ul id="modal-list"></ul>
+      </div>
+      <div class="modal-right">
+        <h3>재료 추가</h3>
+        <input type="text" id="modal-name" placeholder="재료 이름" />
+        <input type="text" id="modal-qty" placeholder="수량 (선택)" />
+        <button onclick="submitModalIngredient()">확인</button>
+        <button onclick="closeModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fridge = [];
+    const pantry = [];
+    let currentSection = "fridge";
+    let editMode = false;
+    let editIndex = null;
+    let draggedIndex = null;
+
+    function renderModalList() {
+      const ul = document.getElementById("modal-list");
+      ul.innerHTML = "";
+      const list = currentSection === "fridge" ? fridge : pantry;
+
+      list.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.setAttribute("draggable", "true");
+        li.setAttribute("data-index", index);
+        li.innerHTML = `
+          ${item.name} ${item.qty ? `(${item.qty})` : ""}
+          <button class="small-btn" onclick="editIngredient('${currentSection}', ${index})">✏️</button>
+          <button class="small-btn" onclick="deleteIngredient('${currentSection}', ${index})">❌</button>
+        `;
+        li.addEventListener("dragstart", handleDragStart);
+        li.addEventListener("dragover", handleDragOver);
+        li.addEventListener("drop", handleDrop);
+        ul.appendChild(li);
+      });
+    }
+
+    function openModal(section) {
+      currentSection = section;
+      document.getElementById("modal").style.display = "flex";
+      renderModalList();
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      document.getElementById("modal-name").value = "";
+      document.getElementById("modal-qty").value = "";
+      editMode = false;
+      editIndex = null;
+    }
+
+    function editIngredient(section, index) {
+      currentSection = section;
+      editMode = true;
+      editIndex = index;
+      const list = section === "fridge" ? fridge : pantry;
+      const item = list[index];
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("modal-name").value = item.name;
+      document.getElementById("modal-qty").value = item.qty;
+    }
+
+    function submitModalIngredient() {
+      const name = document.getElementById("modal-name").value.trim();
+      const qty = document.getElementById("modal-qty").value.trim();
+      if (!name) return alert("재료 이름을 입력하세요.");
+      const list = currentSection === "fridge" ? fridge : pantry;
+
+      if (editMode) {
+        list[editIndex] = { name, qty };
+        editMode = false;
+        editIndex = null;
+      } else {
+        list.push({ name, qty });
+      }
+
+      saveToLocalStorage();
+      renderModalList();
+      document.getElementById("modal-name").value = "";
+      document.getElementById("modal-qty").value = "";
+    }
+
+    function deleteIngredient(type, index) {
+      const list = type === "fridge" ? fridge : pantry;
+      list.splice(index, 1);
+      saveToLocalStorage();
+      renderModalList();
+    }
+
+    function handleDragStart(e) {
+      draggedIndex = Number(e.currentTarget.dataset.index);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+
+    function handleDrop(e) {
+      const targetIndex = Number(e.currentTarget.dataset.index);
+      if (draggedIndex === null || draggedIndex === targetIndex) return;
+      const list = currentSection === "fridge" ? fridge : pantry;
+      const movedItem = list.splice(draggedIndex, 1)[0];
+      list.splice(targetIndex, 0, movedItem);
+      draggedIndex = null;
+      saveToLocalStorage();
+      renderModalList();
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem("fridge", JSON.stringify(fridge));
+      localStorage.setItem("pantry", JSON.stringify(pantry));
+    }
+
+    function loadFromLocalStorage() {
+      const storedFridge = localStorage.getItem("fridge");
+      const storedPantry = localStorage.getItem("pantry");
+      if (storedFridge) fridge.push(...JSON.parse(storedFridge));
+      if (storedPantry) pantry.push(...JSON.parse(storedPantry));
+    }
+
+    function goToProfile() {
+      window.location.href = "profile.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    function toggleMenu() {
+      document.getElementById("sideMenu").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("show");
+    }
+
+    window.onload = () => {
+      loadFromLocalStorage();
+    };
+  </script>
+</body>
+</html>

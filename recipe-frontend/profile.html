@@ -1,61 +1,103 @@
-<!-- profile.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>프로필</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
       background: #fff8f0;
+      padding-top: 60px;
     }
     header {
-      position: relative;
-      background: #ff7043;
-      color: white;
-      padding: 16px;
-      font-size: 24px;
-      text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
     }
-    .hamburger {
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+    .menu-toggle {
       position: absolute;
-      top: 16px;
-      left: 16px;
+      left: 20px;
       font-size: 24px;
       background: none;
       border: none;
-      color: white;
       cursor: pointer;
     }
-    .top-right {
+    .logout-area {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      right: 20px;
       display: flex;
       align-items: center;
-      gap: 10px;
     }
-    .logout-btn {
-      background: #ffffff22;
-      color: white;
-      border: 1px solid white;
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-    }
-    .profile-circle {
-      display: inline-block;
+    .logout-area button:first-child {
       width: 36px;
       height: 36px;
-      background: white;
       border-radius: 50%;
-      text-align: center;
-      line-height: 36px;
-      font-size: 18px;
+      border: none;
+      background-color: #ccc;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+      background-size: cover;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+    .logout-area button:last-child {
+      padding: 5px 10px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -220px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 999;
+      padding-top: 60px;
+    }
+    .side-menu.open {
+      left: 0;
+    }
+    .side-menu a {
+      display: block;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #333;
       text-decoration: none;
-      color: #ff7043;
-      font-weight: bold;
+      border-bottom: 1px solid #eee;
+    }
+    .side-menu a:hover {
+      background-color: #f5f5f5;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      display: none;
+    }
+    .overlay.show {
+      display: block;
     }
     .container {
       max-width: 800px;
@@ -94,21 +136,22 @@
 </head>
 <body>
   <header>
-    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
-    프로필
-    <div class="top-right">
-      <button class="logout-btn" onclick="logout()">Logout</button>
-      <a href="profile.html" class="profile-circle">👤</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="header-title">프로필</div>
+    <div class="logout-area">
+      <button onclick="goToProfile()"></button>
+      <button onclick="logout()">Logout</button>
     </div>
   </header>
 
-  <div class="menu" id="side-menu" style="display:none; position:fixed; top:0; left:0; width:200px; background:white; height:100%; padding:20px; box-shadow:2px 0 8px rgba(0,0,0,0.1);">
-    <a href="index.html">홈</a><br>
-    <a href="main.html">레시피</a><br>
-    <a href="fridge.html">냉장고</a><br>
-    <a href="calendar.html">카드</a><br>
-    <a href="feedback.html">피드백</a>
+  <div id="sideMenu" class="side-menu">
+    <a href="index.html">🏠 홈페이지</a>
+    <a href="main.html">📋 레시피</a>
+    <a href="fridge.html">🧊 냉장고</a>
+    <a href="calendar.html">📅 캘린더</a>
+    <a href="feedback.html">💬 피드백</a>
   </div>
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
   <div class="container">
     <h2>자기소개</h2>
@@ -117,96 +160,37 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
       <h2>내 레시피</h2>
-      <button onclick="openPopup()" style="
-        padding: 8px 16px;
-        background-color: #ffca28;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-      ">+ 나의 레시피 등록하기</button>
+      <button onclick="openPopup()" style="padding: 8px 16px; background-color: #ffca28; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">+ 나의 레시피 등록하기</button>
     </div>
 
-    <!-- 여기에 내 레시피 카드들이 들어가겠지 -->
-    <div class="grid" id="my-recipes">
-      <!-- 동적으로 채움 -->
-    </div>
+    <div class="grid" id="my-recipes"></div>
   </div>
 
-  <!-- 레시피 등록 팝업 -->
-  <div id="popup" style="
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    z-index: 2000;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  ">
-
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 10px; padding: 20px; z-index: 2000; width: 90%; max-width: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
     <h3 style="margin-top: 0;">나의 레시피 등록</h3>
     <div id="steps-container"></div>
-    <button onclick="addStep()" style="
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    ">+ Step 추가하기</button>
+    <button onclick="addStep()" style="margin-top: 15px; padding: 10px 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+ Step 추가하기</button>
     <br/><br/>
-    <button onclick="saveRecipe()" style="
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #2196f3;
-    color: white;
-    border:none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    ">저장하기</button>
-
-    <button onclick="closePopup()" style="
-      padding: 8px 16px;
-      background-color: #f44336;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    ">닫기</button>
+    <button onclick="saveRecipe()" style="margin-top: 15px; padding: 10px 20px; background-color: #2196f3; color: white; border:none; border-radius: 8px; font-weight: bold; cursor: pointer;">저장하기</button>
+    <button onclick="closePopup()" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer;">닫기</button>
   </div>
 
-  <!-- 오버레이 -->
-  <div id="overlay" style="
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 1000;
-  " onclick="closePopup()"></div>
+  <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1000;" onclick="closePopup()"></div>
 
-  <!-- 스크립트 -->
   <script>
-    let stepCount = 0;
-
     function toggleMenu() {
-      const menu = document.getElementById("side-menu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+      const menu = document.getElementById("sideMenu");
+      const overlay = document.getElementById("overlay");
+      menu.classList.toggle("open");
+      overlay.classList.toggle("show");
     }
-
     function logout() {
       localStorage.removeItem("token");
-      location.href = "login.html";
+      window.location.href = "login.html";
     }
-
+    function goToProfile() {
+      window.location.href = "profile.html";
+    }
     function openPopup() {
       document.getElementById("popup").style.display = "block";
       document.getElementById("overlay").style.display = "block";
@@ -214,33 +198,27 @@
       document.getElementById("steps-container").innerHTML = "";
       addStep();
     }
-
     function closePopup() {
       document.getElementById("popup").style.display = "none";
       document.getElementById("overlay").style.display = "none";
     }
-
     function addStep() {
       stepCount++;
       const container = document.getElementById("steps-container");
-
       const stepDiv = document.createElement("div");
       stepDiv.style.border = "1px solid #ccc";
       stepDiv.style.padding = "15px";
       stepDiv.style.marginTop = "20px";
       stepDiv.style.borderRadius = "10px";
       stepDiv.style.backgroundColor = "#fffbe6";
-
       stepDiv.innerHTML = `
         <h4>Step ${stepCount}</h4>
         <textarea placeholder="설명을 입력하세요" style="width: 100%; height: 60px; margin-bottom: 10px;"></textarea>
         <input type="file" accept="image/*" onchange="previewImage(event, 'preview-${stepCount}')">
         <div id="preview-${stepCount}" style="margin-top: 10px;"></div>
       `;
-
       container.appendChild(stepDiv);
     }
-
     function previewImage(event, id) {
       const reader = new FileReader();
       reader.onload = function () {
@@ -249,56 +227,49 @@
       };
       reader.readAsDataURL(event.target.files[0]);
     }
-
     function saveBio() {
       const bio = document.getElementById("bio").value;
       console.log("Bio 저장됨:", bio);
       alert("자기소개 저장 완료!");
     }
-
     function saveRecipe() {
       const steps = [];
       const stepDivs = document.querySelectorAll("#steps-container > div");
-
       stepDivs.forEach((stepDiv, index) => {
         const text = stepDiv.querySelector("textarea").value;
         const image = stepDiv.querySelector("input[type='file']").files[0];
         steps.push({ step: index + 1, text, image });
       });
-
       const formData = new FormData();
-      formData.append("title", prompt("레시피 제목을 입력하세요."));
-      formData.append("description", prompt("간단한 설명을 입력하세요."));
-      formData.append("steps", JSON.stringify(steps.map(s => ({ step: s.step, text: s.text}))));
-
+      const title = prompt("레시피 제목을 입력하세요.");
+      const description = prompt("간단한 설명을 입력하세요.");
+      if (!title || !description) return alert("제목과 설명은 필수입니다.");
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("steps", JSON.stringify(steps.map(s => ({ step: s.step, text: s.text }))));
       steps.forEach((s, i) => {
         if (s.image) {
           formData.append(`image_${i}`, s.image);
         }
       });
-
-      fetch("/recipes", {
+      fetch("http://localhost:5000/recipes", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token")
         },
         body: formData
       })
-      .then((res) => {
-        if (!res.ok) throw new Error("요청 실패");
-        return res.json();
-      })
-      .then((data) => {
-        alert("레시피 등록 성공!");
-        closePopup();
-      })
-      .catch((err) => {
-        console.error("에러:", err);
-        alert("등록 실패 ㅠㅠ");
-      });
-
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success) throw new Error("서버 응답 실패");
+          alert("레시피 등록 성공!");
+          closePopup();
+        })
+        .catch(err => {
+          console.error("에러:", err);
+          alert("등록 실패 ㅠㅠ");
+        });
     }
-
     function loadMyRecipes() {
       const token = localStorage.getItem("token");
       fetch("/my-recipes", {
@@ -312,15 +283,18 @@
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
-            <h3>${r.title}</h3>
-            <p>${r.description}</p>
-            <small>${r.created_at}</small>
+              <h3>${r.title}</h3>
+              <p>${r.description}</p>
+              <small>${r.created_at}</small>
             `;
             grid.appendChild(card);
           });
         });
     }
-    loadMyRecipes();
+    let stepCount = 0;
+    window.onload = () => {
+      loadMyRecipes();
+    };
   </script>
 </body>
 </html>

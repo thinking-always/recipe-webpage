@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘 뭐 먹지? - 캘린더</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fffaf3;
+      padding-top: 60px;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      left: 20px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .logout-area {
+      position: absolute;
+      right: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logout-area button:first-child {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background-color: #ccc;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+      background-size: cover;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .logout-area button:last-child {
+      padding: 5px 10px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -220px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 999;
+      padding-top: 60px;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .side-menu a {
+      display: block;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #333;
+      text-decoration: none;
+      border-bottom: 1px solid #eee;
+    }
+
+    .side-menu a:hover {
+      background-color: #f5f5f5;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      display: none;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px;
+    }
+
+    .calendar {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+
+    .day-name {
+      font-weight: bold;
+      background: #f0f0f0;
+      padding: 10px;
+    }
+
+    .date-cell {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      min-height: 60px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .date-cell.selected {
+      background: #d1f5d3;
+    }
+
+    .date-number {
+      font-size: 14px;
+      font-weight: bold;
+      position: absolute;
+      top: 6px;
+      left: 8px;
+    }
+
+    .meal-name {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="header-title">오늘 뭐 먹지?</div>
+    <div class="logout-area">
+      <button onclick="goToProfile()"></button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div id="sideMenu" class="side-menu">
+    <a href="index.html">🏠 홈페이지</a>
+    <a href="main.html">📋 레시피</a>
+    <a href="fridge.html">🧊 냉장고</a>
+    <a href="calendar.html">📅 캘린더</a>
+    <a href="feedback.html">💬 피드백</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <div class="top-controls">
+    <button onclick="generateRandomMeals()">🎲 랜덤 뽑기</button>
+  </div>
+
+  <div class="calendar">
+    <div class="calendar-header">
+      <select id="year"></select>
+      <select id="month"></select>
+    </div>
+    <div class="calendar-grid" id="calendar-days"></div>
+  </div>
+
+  <script>
+    const today = new Date();
+    let selectedDates = new Set();
+    let isDragging = false;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "/login.html";
+    }
+
+    function goToProfile() {
+      window.location.href = "profile.html";
+    }
+
+    function toggleMenu() {
+      document.getElementById("sideMenu").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("show");
+    }
+
+    function populateYearMonth() {
+      const yearSelect = document.getElementById("year");
+      const monthSelect = document.getElementById("month");
+      const nowYear = today.getFullYear();
+      for (let y = nowYear - 1; y <= nowYear + 1; y++) {
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y + "년";
+        yearSelect.appendChild(option);
+      }
+      for (let m = 0; m < 12; m++) {
+        const option = document.createElement("option");
+        option.value = m;
+        option.textContent = m + 1 + "월";
+        monthSelect.appendChild(option);
+      }
+      yearSelect.value = nowYear;
+      monthSelect.value = today.getMonth();
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById("calendar-days");
+      container.innerHTML = "";
+
+      const year = parseInt(document.getElementById("year").value);
+      const month = parseInt(document.getElementById("month").value);
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+
+      const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+      dayNames.forEach(day => {
+        const div = document.createElement("div");
+        div.className = "day-name";
+        div.textContent = day;
+        container.appendChild(div);
+      });
+
+      for (let i = 0; i < startDay; i++) {
+        container.appendChild(document.createElement("div"));
+      }
+
+      for (let d = 1; d <= lastDay.getDate(); d++) {
+        const dateStr = `${year}-${month + 1}-${d}`;
+        const cell = document.createElement("div");
+        cell.className = "date-cell";
+        cell.setAttribute("data-date", dateStr);
+
+        if (isToday(year, month, d)) {
+          cell.classList.add("selected");
+          selectedDates.add(dateStr);
+        }
+        if (selectedDates.has(dateStr)) {
+          cell.classList.add("selected");
+        }
+
+        cell.addEventListener("mousedown", () => {
+          isDragging = true;
+          toggleDateSelection(dateStr, cell);
+        });
+
+        cell.addEventListener("mouseenter", (e) => {
+          if (isDragging && e.buttons === 1) {
+            selectedDates.add(dateStr);
+            cell.classList.add("selected");
+          }
+        });
+
+        const num = document.createElement("div");
+        num.className = "date-number";
+        num.textContent = d;
+        cell.appendChild(num);
+
+        container.appendChild(cell);
+      }
+    }
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    function isToday(y, m, d) {
+      return y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
+    }
+
+    function toggleDateSelection(dateStr, cell) {
+      if (selectedDates.has(dateStr)) {
+        selectedDates.delete(dateStr);
+        cell.classList.remove("selected");
+      } else {
+        selectedDates.add(dateStr);
+        cell.classList.add("selected");
+      }
+    }
+
+    function generateRandomMeals() {
+      fetch("http://localhost:5000/recipes", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const recipes = data.data;
+        if (!recipes || recipes.length === 0) {
+          alert("레시피가 없습니다.");
+          return;
+        }
+
+        document.querySelectorAll(".date-cell").forEach(cell => {
+          const date = cell.getAttribute("data-date");
+          const existing = cell.querySelector(".meal-name");
+          if (existing) cell.removeChild(existing);
+
+          if (selectedDates.has(date)) {
+            const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+            const meal = document.createElement("div");
+            meal.className = "meal-name";
+            meal.textContent = "추천: " + randomRecipe.title;
+            cell.appendChild(meal);
+          }
+        });
+      });
+    }
+
+    document.getElementById("year").onchange = renderCalendar;
+    document.getElementById("month").onchange = renderCalendar;
+
+    populateYearMonth();
+    renderCalendar();
+  </script>
+</body>
+</html>

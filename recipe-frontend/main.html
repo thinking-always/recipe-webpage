@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>오늘 뭐 먹지? - 레시피</title>
+  <meta charset="UTF-8">
+  <title>프로필</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fffaf3;
+      font-family: sans-serif;
+      background: #fff8f0;
       padding-top: 60px;
     }
-
     header {
       position: fixed;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 60px;
       background: #ffca28;
       display: flex;
@@ -23,13 +24,11 @@
       z-index: 1000;
       border-bottom: 1px solid #ddd;
     }
-
     .header-title {
       font-size: 22px;
       font-weight: bold;
       color: #333;
     }
-
     .menu-toggle {
       position: absolute;
       left: 20px;
@@ -38,21 +37,18 @@
       border: none;
       cursor: pointer;
     }
-
-    .header-actions {
+    .logout-area {
       position: absolute;
       right: 20px;
       display: flex;
       align-items: center;
     }
-
-    .header-actions button {
+    .logout-area button {
       margin-left: 8px;
       border: none;
       cursor: pointer;
     }
-
-    .profile-btn {
+    .logout-area .profile-btn {
       width: 36px;
       height: 36px;
       border-radius: 50%;
@@ -60,60 +56,13 @@
       background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
       background-size: cover;
     }
-
-    .logout-btn {
+    .logout-area .logout-btn {
       padding: 6px 10px;
       background-color: #f44336;
       color: white;
       border-radius: 5px;
       font-size: 14px;
     }
-
-    .container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .search-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    .search-row input {
-      flex-grow: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-      outline: none;
-    }
-
-    .search-row button {
-      padding: 10px 16px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 14px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
-    }
-
     .side-menu {
       position: fixed;
       top: 0;
@@ -126,11 +75,9 @@
       z-index: 999;
       padding-top: 60px;
     }
-
     .side-menu.open {
       left: 0;
     }
-
     .side-menu a {
       display: block;
       padding: 15px 20px;
@@ -139,11 +86,9 @@
       text-decoration: none;
       border-bottom: 1px solid #eee;
     }
-
     .side-menu a:hover {
       background-color: #f5f5f5;
     }
-
     .overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -151,37 +96,56 @@
       z-index: 998;
       display: none;
     }
-
     .overlay.show {
       display: block;
     }
-
-    .register-btn {
-      display: block;
-      margin-bottom: 30px;
-      background-color: #1976d2;
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 30px;
+    }
+    .card {
+      background: #fefefe;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .modal-btn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #66bb6a;
       color: white;
-      padding: 10px 16px;
       border: none;
-      border-radius: 20px;
-      font-size: 14px;
       cursor: pointer;
-      float: right;
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- 상단바 -->
   <header>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-    <div class="header-title">레시피</div>
-    <div class="header-actions">
-      <button class="profile-btn" onclick="window.location.href='profile.html'"></button>
+    <div class="header-title">프로필</div>
+    <div class="logout-area">
+      <button class="profile-btn" onclick="goToProfile()"></button>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
 
-  <!-- Side Menu -->
+  <!-- 사이드 메뉴 -->
   <div id="sideMenu" class="side-menu">
     <a href="index.html">🏠 홈페이지</a>
     <a href="main.html">📋 레시피</a>
@@ -191,24 +155,40 @@
   </div>
   <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
-  <!-- Main -->
+  <!-- 내용 -->
   <div class="container">
-    <button class="register-btn" onclick="window.location.href='profile.html'">+ 레시피 등록</button>
+    <h2>자기소개</h2>
+    <textarea id="bio" rows="4" placeholder="다음은 당신의 자기소개입니다..."></textarea>
+    <button class="modal-btn" onclick="saveBio()">저장</button>
 
-    <div class="search-row">
-      <input type="text" id="search" placeholder="레시피 검색..." oninput="filterRecipes()" />
-      <button onclick="filterRecipes()">검색</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+      <h2>내 레시피</h2>
+      <button class="modal-btn" onclick="openPopup()">+ 나의 레시피 등록하기</button>
     </div>
 
-    <div id="recipe-list" class="grid"></div>
+    <div class="grid" id="my-recipes"></div>
   </div>
+
+  <!-- 팝업 -->
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 10px; padding: 20px; z-index: 2000; width: 90%; max-width: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    <h3 style="margin-top: 0;">나의 레시피 등록</h3>
+    <div id="steps-container"></div>
+    <button onclick="addStep()" class="modal-btn" style="background: #4caf50;">+ Step 추가하기</button>
+    <br/><br/>
+    <button onclick="saveRecipe()" class="modal-btn" style="background: #2196f3;">저장하기</button>
+    <button onclick="closePopup()" class="modal-btn" style="background: #f44336;">닫기</button>
+  </div>
+
+  <!-- 오버레이 -->
+  <div id="popup-overlay" class="overlay" onclick="closePopup()"></div>
 
   <!-- Script -->
   <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다");
-      window.location.href = "login.html";
+    let stepCount = 0;
+
+    function toggleMenu() {
+      document.getElementById("sideMenu").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("show");
     }
 
     function logout() {
@@ -216,47 +196,104 @@
       window.location.href = "login.html";
     }
 
-    function toggleMenu() {
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("overlay");
-      menu.classList.toggle("open");
-      overlay.classList.toggle("show");
+    function goToProfile() {
+      window.location.href = "profile.html";
     }
 
-    function escapeHTML(str) {
-      return str.replace(/[&<>"']/g, tag => (
-        {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag]
-      ));
+    function saveBio() {
+      const bio = document.getElementById("bio").value;
+      alert("자기소개 저장 완료!");
     }
 
-    let allRecipes = [];
-
-    function filterRecipes() {
-      const keyword = document.getElementById("search").value.toLowerCase();
-      const filtered = allRecipes.filter(r => r.title.toLowerCase().includes(keyword));
-      renderRecipes(filtered);
+    function openPopup() {
+      document.getElementById("popup").style.display = "block";
+      document.getElementById("popup-overlay").style.display = "block";
+      stepCount = 0;
+      document.getElementById("steps-container").innerHTML = "";
+      addStep();
     }
 
-    function renderRecipes(recipes) {
-      const list = document.getElementById("recipe-list");
-      list.innerHTML = "";
-      recipes.forEach(r => {
-        list.innerHTML += `
-          <div class="card">
-            <h3>${escapeHTML(r.title)}</h3>
-            <p>${escapeHTML(r.description.slice(0, 60))}...</p>
-          </div>`;
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+      document.getElementById("popup-overlay").style.display = "none";
+    }
+
+    function addStep() {
+      stepCount++;
+      const container = document.getElementById("steps-container");
+      const stepDiv = document.createElement("div");
+      stepDiv.style.marginTop = "10px";
+      stepDiv.innerHTML = `
+        <h4>Step ${stepCount}</h4>
+        <textarea placeholder="설명을 입력하세요" style="width: 100%; height: 60px; margin-bottom: 10px;"></textarea>
+        <input type="file" accept="image/*">
+      `;
+      container.appendChild(stepDiv);
+    }
+
+    function saveRecipe() {
+      const steps = [];
+      document.querySelectorAll("#steps-container > div").forEach((stepDiv, index) => {
+        const text = stepDiv.querySelector("textarea").value;
+        const image = stepDiv.querySelector("input[type='file']").files[0];
+        steps.push({ step: index + 1, text, image });
+      });
+
+      const formData = new FormData();
+      const title = prompt("레시피 제목을 입력하세요.");
+      const description = prompt("간단한 설명을 입력하세요.");
+      if (!title || !description) return alert("제목과 설명은 필수입니다.");
+
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("steps", JSON.stringify(steps.map(s => ({ step: s.step, text: s.text }))));
+
+      steps.forEach((s, i) => {
+        if (s.image) {
+          formData.append(`image_${i}`, s.image);
+        }
+      });
+
+      fetch("http://localhost:5000/recipes", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) throw new Error("서버 응답 실패");
+        alert("레시피 등록 성공!");
+        closePopup();
+      })
+      .catch(err => {
+        console.error("에러:", err);
+        alert("등록 실패 ㅠㅠ");
       });
     }
 
-    fetch("/recipes", {
-      headers: { "Authorization": "Bearer " + token }
-    })
-    .then(res => res.json())
-    .then(data => {
-      allRecipes = data.data;
-      renderRecipes(allRecipes);
-    });
+    function loadMyRecipes() {
+      const token = localStorage.getItem("token");
+      fetch("/my-recipes", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+        .then(res => res.json())
+        .then(data => {
+          const grid = document.getElementById("my-recipes");
+          grid.innerHTML = "";
+          data.data.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `<h3>${r.title}</h3><p>${r.description}</p><small>${r.created_at}</small>`;
+            grid.appendChild(card);
+          });
+        });
+    }
+
+    window.onload = () => {
+      loadMyRecipes();
+    };
   </script>
 </body>
 </html>
