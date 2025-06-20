@@ -132,6 +132,14 @@
       padding: 12px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
+    .recipe-title-input {
+      width: 95%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -168,14 +176,15 @@
 
   <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 10px; padding: 20px; z-index: 2000; width: 90%; max-width: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
     <h3 style="margin-top: 0;">나의 레시피 등록</h3>
+
+    <input type="text" id="recipe-title" class="recipe-title-input" placeholder="레시피 제목을 입력하세요" />
+    
     <div id="steps-container"></div>
     <button onclick="addStep()" style="margin-top: 15px; padding: 10px 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+ Step 추가하기</button>
     <br/><br/>
     <button onclick="saveRecipe()" style="margin-top: 15px; padding: 10px 20px; background-color: #2196f3; color: white; border:none; border-radius: 8px; font-weight: bold; cursor: pointer;">저장하기</button>
     <button onclick="closePopup()" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer;">닫기</button>
   </div>
-
-  <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1000;" onclick="closePopup()"></div>
 
   <script>
     function toggleMenu() {
@@ -193,14 +202,15 @@
     }
     function openPopup() {
       document.getElementById("popup").style.display = "block";
-      document.getElementById("overlay").style.display = "block";
+      document.getElementById("overlay").classList.add("show");
       stepCount = 0;
       document.getElementById("steps-container").innerHTML = "";
+      document.getElementById("recipe-title").value = "";
       addStep();
     }
     function closePopup() {
       document.getElementById("popup").style.display = "none";
-      document.getElementById("overlay").style.display = "none";
+      document.getElementById("overlay").classList.remove("show");
     }
     function addStep() {
       stepCount++;
@@ -213,7 +223,7 @@
       stepDiv.style.backgroundColor = "#fffbe6";
       stepDiv.innerHTML = `
         <h4>Step ${stepCount}</h4>
-        <textarea placeholder="설명을 입력하세요" style="width: 100%; height: 60px; margin-bottom: 10px;"></textarea>
+        <textarea placeholder="설명을 입력하세요" style="width: 95%; height: 60px; margin-bottom: 10px;"></textarea>
         <input type="file" accept="image/*" onchange="previewImage(event, 'preview-${stepCount}')">
         <div id="preview-${stepCount}" style="margin-top: 10px;"></div>
       `;
@@ -241,9 +251,9 @@
         steps.push({ step: index + 1, text, image });
       });
       const formData = new FormData();
-      const title = prompt("레시피 제목을 입력하세요.");
-      const description = prompt("간단한 설명을 입력하세요.");
-      if (!title || !description) return alert("제목과 설명은 필수입니다.");
+      const title = document.getElementById("recipe-title").value;
+      const description = "";
+      if (!title.trim()) return alert("제목은 필수입니다!");
       formData.append("title", title);
       formData.append("description", description);
       formData.append("steps", JSON.stringify(steps.map(s => ({ step: s.step, text: s.text }))));
@@ -261,7 +271,6 @@
       })
         .then(res => res.json())
         .then(data => {
-          if (!data.success) throw new Error("서버 응답 실패");
           alert("레시피 등록 성공!");
           closePopup();
         })
