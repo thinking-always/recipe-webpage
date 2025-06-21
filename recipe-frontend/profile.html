@@ -174,17 +174,31 @@
     <div class="grid" id="my-recipes"></div>
   </div>
 
-  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 10px; padding: 20px; z-index: 2000; width: 90%; max-width: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-    <h3 style="margin-top: 0;">나의 레시피 등록</h3>
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 10px; padding: 20px; z-index: 2000; width: 90%; max-width: 800px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+  <h3 style="margin-top: 0;">나의 레시피 등록</h3>
 
-    <input type="text" id="recipe-title" class="recipe-title-input" placeholder="레시피 제목을 입력하세요" />
-    
-    <div id="steps-container"></div>
-    <button onclick="addStep()" style="margin-top: 15px; padding: 10px 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+ Step 추가하기</button>
-    <br/><br/>
-    <button onclick="saveRecipe()" style="margin-top: 15px; padding: 10px 20px; background-color: #2196f3; color: white; border:none; border-radius: 8px; font-weight: bold; cursor: pointer;">저장하기</button>
-    <button onclick="closePopup()" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer;">닫기</button>
+  <div style="display: flex; gap: 20px;">
+    <!-- 왼쪽: 제목 + 스텝 -->
+    <div style="flex: 3;">
+      <input type="text" id="recipe-title" class="recipe-title-input" placeholder="레시피 제목을 입력하세요" style="width: 100%; padding: 10px; margin-bottom: 10px;" />
+      <div id="steps-container"></div>
+      <button onclick="addStep()" style="margin-top: 15px; padding: 10px 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+ Step 추가하기</button>
+    </div>
+
+    <!-- 오른쪽: 재료 입력 -->
+    <div style="flex: 1;">
+      <h4>재료 추가</h4>
+      <input type="text" id="ingredient-input" placeholder="예: 양파" style="width: 100%; padding: 8px;" />
+      <button onclick="addIngredient()" style="margin-top: 8px; padding: 6px 10px;">추가</button>
+      <ul id="ingredient-list" style="margin-top: 10px; padding-left: 20px;"></ul>
+    </div>
   </div>
+
+  <br/>
+  <button onclick="saveRecipe()" style="margin-top: 15px; padding: 10px 20px; background-color: #2196f3; color: white; border:none; border-radius: 8px; font-weight: bold; cursor: pointer;">저장하기</button>
+  <button onclick="closePopup()" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer;">닫기</button>
+</div>
+
 
   <script>
     function toggleMenu() {
@@ -257,6 +271,10 @@
       formData.append("title", title);
       formData.append("description", description);
       formData.append("steps", JSON.stringify(steps.map(s => ({ step: s.step, text: s.text }))));
+
+      formData.append("ingredients", JSON.stringify(ingredients));
+
+      
       steps.forEach((s, i) => {
         if (s.image) {
           formData.append(`image_${i}`, s.image);
@@ -279,6 +297,8 @@
           alert("등록 실패 ㅠㅠ");
         });
     }
+    
+
     function loadMyRecipes() {
       const token = localStorage.getItem("token");
       fetch("/my-recipes", {
@@ -304,6 +324,29 @@
     window.onload = () => {
       loadMyRecipes();
     };
+
+    let ingredients = [];
+
+function addIngredient() {
+  const input = document.getElementById("ingredient-input");
+  const value = input.value.trim();
+  if (value === "") return;
+  ingredients.push(value);
+  input.value = "";
+  renderIngredients();
+}
+
+function renderIngredients() {
+  const ul = document.getElementById("ingredient-list");
+  ul.innerHTML = "";
+  ingredients.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    ul.appendChild(li);
+  });
+}
+
+
   </script>
 </body>
 </html>
